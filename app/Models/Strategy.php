@@ -490,7 +490,7 @@ class Strategy extends Model
 
         $defaultStep = [
             'level' => 'default',
-            'label' => 'Default strategy',
+            'label' => __('labels.misc_default_strategy'),
             'target' => null,
             'strategy' => $default,
             'state' => $defaultState,

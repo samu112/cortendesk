@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Label;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
@@ -73,7 +74,7 @@ class AlarmLog extends Model
     /** Human label for this alarm's typ; "Type N" when unknown. */
     public function typeLabel(): string
     {
-        return self::TYPES[$this->typ]['label'] ?? 'Type '.$this->typ;
+        return Label::get('alarm_type', $this->typ, self::TYPES[$this->typ]['label'] ?? __('labels.misc_type_n', ['n' => $this->typ]));
     }
 
     /** Bootstrap severity suffix (danger|warning|info|secondary) for the badge. */
