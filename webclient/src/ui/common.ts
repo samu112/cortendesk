@@ -3,6 +3,7 @@
 // config plumbing. app.ts re-exports everything here for back-compat.
 import type { DisplayInfo, SessionConfig, SessionState, UiCommand } from '../core/contracts';
 import type { DisplayRect } from '../input/mouse-keyboard';
+import { tl } from '../i18n';
 
 export type RdGlobalConfig = {
   peerId?: string;
@@ -38,15 +39,15 @@ export function overlayVersion(cfg?: { version?: string } | null): string {
 }
 
 export const STATE_LABEL: Record<SessionState, string> = {
-  connecting: 'Connecting',
-  rendezvous: 'Contacting server',
-  relay: 'Opening relay',
-  handshake: 'Securing channel',
-  login: 'Authenticating',
-  streaming: 'Connected',
-  error: 'Error',
-  closed: 'Disconnected',
-  needAccept: 'Waiting for remote user to accept',
+  connecting: tl('connecting'),
+  rendezvous: tl('contacting_server'),
+  relay: tl('opening_relay'),
+  handshake: tl('securing_channel'),
+  login: tl('authenticating'),
+  streaming: tl('connected'),
+  error: tl('error'),
+  closed: tl('disconnected'),
+  needAccept: tl('waiting_for_remote_user_accept'),
 };
 
 export function formatDuration(ms: number): string {

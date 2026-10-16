@@ -42,6 +42,7 @@ import {
   parsePrivacyModeImpls,
 } from './session-controls';
 import { parseAdvancedPeerCapabilities } from './advanced-capabilities';
+import { tl } from '../i18n';
 
 export const CLIENT_VERSION = '1.4.0';
 
@@ -172,19 +173,19 @@ export class Session {
     try {
       parsed = parseRendezvous(b);
     } catch {
-      this.fail('malformed rendezvous message');
+      this.fail(tl('error_malformed_rendezvous'));
       return;
     }
     switch (parsed.kind) {
       case 'relayResponse': {
         if (!parsed.pk || parsed.pk.length === 0) {
-          this.fail('relay response missing server-signed pk');
+          this.fail(tl('error_relay_response_unsigned'));
           return;
         }
         try {
           this.peerEdPk = verifyServerRelayPk(parsed.pk, this.serverEdPk, this.config.peerId);
         } catch (e) {
-          this.fail(`server trust link failed: ${(e as Error).message}`);
+          this.fail(tl('error_server_trust_failed', { message: (e as Error).message }));
           return;
         }
         this.uuid = parsed.uuid;
@@ -194,7 +195,7 @@ export class Session {
       }
       case 'punchHoleResponse':
         // The server's own text when it sends one: it says why (e.g. not approved).
-        if (parsed.failure) this.fail(parsed.message || `punch hole failed: ${parsed.failure}`);
+        if (parsed.failure) this.fail(parsed.message || tl(`failure_${parsed.failure.toLowerCase()}`));
         return;
       default:
         return;
@@ -332,7 +333,7 @@ export class Session {
             initialOptions: this.config.initialOptions,
           }),
         );
-        if (manualAccept) this.setState('needAccept', 'Waiting for the remote user to accept');
+        if (manualAccept) this.setState('needAccept', tl('waiting_for_remote_user_accept_2'));
         return;
       }
       case 'login_response': {
@@ -444,7 +445,7 @@ export class Session {
         if (!u.voice_call_request.is_connect && hadCall) {
           this.pendingVoiceCallTimestamp = null;
           this.voiceCallAccepted = false;
-          this.sinks.emit({ t: 'voiceCall', state: 'closed', detail: 'Remote user ended the call' });
+          this.sinks.emit({ t: 'voiceCall', state: 'closed', detail: tl('remote_user_ended_call') });
         }
         return;
       }
@@ -458,7 +459,7 @@ export class Session {
           this.sinks.emit({
             t: 'voiceCall',
             state: 'closed',
-            detail: 'Voice call response could not be verified',
+            detail: tl('voice_call_response_could_not'),
           });
           return;
         }

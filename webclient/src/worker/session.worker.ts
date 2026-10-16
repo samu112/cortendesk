@@ -33,6 +33,7 @@ import { VideoPipeline, mseH264Available, probeSupportedDecoding, type EncodedCa
 import { ForwardingVideoPipeline } from '../media/mse-video';
 import { cursorToDataUrl, decodeClipboardText, initZstd, zstdDecode } from '../input/clipboard-cursor';
 import { decodeTerminalOutput } from './terminal-output';
+import { setCatalog, tl } from '../i18n';
 
 // Decoded audio is outside the frozen SessionEvent union: the main thread
 // feeds it to an AudioWorklet ring buffer and ignores unknown `t` otherwise.
@@ -140,13 +141,14 @@ function errMsg(e: unknown): string {
 }
 
 const CONNECT_TIMEOUT_MS = 25000;
+// Catalog keys (lang/<locale>/webclient.php): where a stalled connect was stuck.
 const CONNECT_STAGE: Partial<Record<string, string>> = {
-  connecting: 'connecting',
-  rendezvous: 'contacting the server',
-  relay: 'opening the relay',
-  handshake: 'securing the channel',
-  login: 'authenticating',
-  needAccept: 'waiting for the remote user to accept',
+  connecting: 'stage_connecting',
+  rendezvous: 'stage_contacting_server',
+  relay: 'stage_opening_relay',
+  handshake: 'stage_securing_channel',
+  login: 'stage_authenticating',
+  needAccept: 'stage_waiting_accept',
 };
 
 export class WorkerHost {
@@ -188,6 +190,7 @@ export class WorkerHost {
   handle(cmd: UiCommand): void {
     switch (cmd.c) {
       case 'connect':
+        setCatalog(cmd.config.messages);
         void this.connect(cmd.config, cmd.canvas);
         return;
       case 'connectFile':
@@ -541,7 +544,7 @@ export class WorkerHost {
             this.deps.post({
               t: 'state',
               state: 'error',
-              detail: `Timed out while ${CONNECT_STAGE[st] ?? 'connecting'} — the device may be offline or busy. Try again.`,
+              detail: tl('connect_timeout', { stage: tl(CONNECT_STAGE[st] ?? 'stage_connecting') }),
             });
             this.teardown();
           }
@@ -707,7 +710,7 @@ export class WorkerHost {
     if (this.tornDown) return;
     const st = this.session?.currentState;
     if (st === 'connecting' || st === 'rendezvous') {
-      this.deps.post({ t: 'state', state: 'error', detail: 'id server connection lost' });
+      this.deps.post({ t: 'state', state: 'error', detail: tl('connection_lost', { which: 'id server' }) });
       this.teardown();
     }
     // else: relay is live; drop the id socket silently, keep the session.
@@ -718,7 +721,7 @@ export class WorkerHost {
     if (this.tornDown) return;
     const st = this.session?.currentState;
     if (st !== 'closed' && st !== 'error') {
-      this.deps.post({ t: 'state', state: 'error', detail: `${which} connection lost` });
+      this.deps.post({ t: 'state', state: 'error', detail: tl('connection_lost', { which }) });
     }
     this.teardown();
   }
