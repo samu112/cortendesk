@@ -38,7 +38,7 @@ class User extends Authenticatable
     public const THEMES = ['dark', 'light', 'system'];
 
     /** Console languages, by code, with the name each is shown under (always its own). */
-    public const LOCALES = ['en' => 'English'];
+    public const LOCALES = ['en' => 'English', 'hu' => 'Magyar', 'de' => 'Deutsch'];
 
     /** The saved theme, or dark when none is saved. */
     public function themePreference(): string

@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'actions' => 'Műveletek',
+    'administrators_see_every_device_and' => 'A rendszergazdák minden eszközt és minden konzolbeállítást látnak.',
+    'console_sign_in_is_by' => 'A konzolba felhasználónévvel lehet bejelentkezni, ezért te választod meg — nem a meghívott.',
+    'copy_link_now_it_is' => 'Másold ki most a hivatkozást: csak egyszer jelenik meg, később nem kérhető le.',
+    'device_groups_they_may_access' => 'Eszközcsoportok, amelyekhez hozzáférhet',
+    'e_g_jsmith' => 'pl. jsmith',
+    'email_is_not_configured_so' => 'Az e-mail nincs beállítva, ezért semmi sem kerül elküldésre — másold ki az alábbi hivatkozást, és add át magad (',
+    'emailed_to' => 'A meghívó elküldve e-mailben ide: :email.',
+    'expired' => 'Lejárt',
+    'invitation_created_but_no_email' => 'A meghívó létrejött — de e-mail nem lett elküldve.',
+    'invitation_lets_someone_set_their' => 'A meghívóval valaki maga állíthatja be a jelszavát anélkül, hogy te valaha látnád.',
+    'invitations' => 'Meghívók',
+    'invite_someone_by_email_they' => 'Hívj meg valakit e-mailben: ő maga választ jelszót, és közvetlenül a konzolba érkezik pontosan az itt választott szerepkörrel és csoportokkal.',
+    'invite_user' => 'Felhasználó meghívása',
+    'invited_by' => 'Meghívta',
+    'invited_by_name' => 'Meghívta: :name',
+    'link_is_single_use_and' => 'A hivatkozás egyszer használható, és :hours óra múlva lejár. A szerepkörről semmi sem utazik az URL-ben — az itt van tárolva.',
+    'no_pending_invitations' => 'Nincs függőben lévő meghívó.',
+    'only_full_administrator_can_resend' => 'Ezt csak teljes jogú rendszergazda küldheti újra vagy vonhatja vissza.',
+    're_send_this_invitation_previous' => 'Újraküldöd ezt a meghívót? Az előző hivatkozás megszűnik működni.',
+    'resend' => 'Újraküldés',
+    'revoke_invitation_for_email' => 'Visszavonod a(z) :email meghívóját?',
+    'send_invitation' => 'Meghívó küldése',
+    'user_groups' => 'Felhasználói csoportok',
+];

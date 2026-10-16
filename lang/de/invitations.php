@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'actions' => 'Aktionen',
+    'administrators_see_every_device_and' => 'Administratoren sehen jedes Gerät und jede Konsoleneinstellung.',
+    'console_sign_in_is_by' => 'Die Konsolenanmeldung erfolgt per Benutzername, daher wählst du ihn — nicht der Eingeladene.',
+    'copy_link_now_it_is' => 'Kopiere den Link jetzt: Er wird nur einmal angezeigt und kann später nicht abgerufen werden.',
+    'device_groups_they_may_access' => 'Gerätegruppen, auf die sie zugreifen dürfen',
+    'e_g_jsmith' => 'z. B. jsmith',
+    'email_is_not_configured_so' => 'E-Mail ist nicht konfiguriert, daher wird nichts gesendet — kopiere den Link unten und gib ihn selbst weiter (',
+    'emailed_to' => 'Einladung per E-Mail an :email gesendet.',
+    'expired' => 'Abgelaufen',
+    'invitation_created_but_no_email' => 'Einladung erstellt — aber es wurde keine E-Mail gesendet.',
+    'invitation_lets_someone_set_their' => 'Mit einer Einladung legt jemand sein eigenes Passwort fest, ohne dass du es je anfasst.',
+    'invitations' => 'Einladungen',
+    'invite_someone_by_email_they' => 'Lade jemanden per E-Mail ein: Die Person wählt ihr eigenes Passwort und landet direkt in der Konsole mit genau der Rolle und den Gruppen, die du hier festlegst.',
+    'invite_user' => 'Benutzer einladen',
+    'invited_by' => 'Eingeladen von',
+    'invited_by_name' => 'Eingeladen von :name',
+    'link_is_single_use_and' => 'Der Link ist nur einmal verwendbar und läuft in :hours Stunden ab. Nichts über die Rolle steckt in der URL — sie wird hier gespeichert.',
+    'no_pending_invitations' => 'Keine ausstehenden Einladungen.',
+    'only_full_administrator_can_resend' => 'Nur ein vollständiger Administrator kann diese erneut senden oder widerrufen.',
+    're_send_this_invitation_previous' => 'Diese Einladung erneut senden? Der vorherige Link funktioniert dann nicht mehr.',
+    'resend' => 'Erneut senden',
+    'revoke_invitation_for_email' => 'Einladung für :email widerrufen?',
+    'send_invitation' => 'Einladung senden',
+    'user_groups' => 'Benutzergruppen',
+];

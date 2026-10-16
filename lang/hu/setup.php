@@ -1,0 +1,25 @@
+<?php
+
+return [
+    '1_point_client_at_this' => '1. Irányíts egy klienst erre a konzolra',
+    '2_confirm_first_heartbeat' => '2. Erősítsd meg az első jelzést',
+    '3_recommended_security' => '3. Ajánlott biztonsági beállítások',
+    'administrator_2fa' => 'Rendszergazdai 2FA',
+    'and_enter_your_id_server' => 'és add meg az ID-kiszolgálót, a továbbító-kiszolgálót, a kulcsot és az API-kiszolgálót.',
+    'complete_server_settings' => 'Töltsd ki a Kiszolgálóbeállításokat',
+    'copy_them_from_client_setup' => 'Másold ki őket a Kliensbeállításból',
+    'device_approval' => 'Eszköz-jóváhagyás',
+    'device_has_checked_in' => 'Egy eszköz jelentkezett.',
+    'do_this_later' => 'Később',
+    'finish_setup' => 'Beállítás befejezése',
+    'first' => 'előbb.',
+    'first_run_setup' => 'Első indítási beállítás',
+    'hold_new_devices_for_review' => 'Az új eszközök felülvizsgálatra várnak, mielőtt megjelennek a flottában.',
+    'in_rustdesk_open' => 'A RustDeskben nyisd meg:',
+    'one_or_more_of_those' => 'Ezek közül egy vagy több érték még nincs beállítva.',
+    'protect_console_access_with_authenticato' => 'Védd a konzolhozzáférést hitelesítő alkalmazással és helyreállítási kódokkal.',
+    'review_security_settings' => 'Biztonsági beállítások áttekintése',
+    'set_up_your_first_rustdesk' => 'Állítsd be az első RustDesk-eszközödet',
+    'two_steps_configure_client_then' => 'Két lépés: állíts be egy klienst, majd győződj meg róla, hogy jelentkezik.',
+    'waiting_for_device_to_check' => 'Várakozás egy eszköz jelentkezésére. Az oldal 10 másodpercenként ellenőriz.',
+];
