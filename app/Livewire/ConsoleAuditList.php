@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Support\Label;
 use App\Livewire\Concerns\AuthorizesConsole;
 use App\Models\ConsoleAudit;
 use App\Support\Csv;
@@ -160,7 +161,7 @@ class ConsoleAuditList extends Component
     {
         return view('livewire.console-audit-list', [
             'audits' => $this->query()->paginate($this->perPage),
-            'actions' => self::ACTIONS,
+            'actions' => collect(self::ACTIONS)->map(fn ($label, $code) => Label::get('audit_action', $code, $label))->all(),
         ]);
     }
 }

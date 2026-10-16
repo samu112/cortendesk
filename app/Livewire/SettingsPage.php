@@ -357,14 +357,14 @@ class SettingsPage extends Component
 
         if (trim($this->clientUrlScheme) !== '' && ClientLink::normalize($this->clientUrlScheme) === '') {
             $this->tab = 'server';
-            $this->addError('clientUrlScheme', 'Letters, digits, "+", "-" and "." only, starting with a letter.');
+            $this->addError('clientUrlScheme', __('messages.url_scheme_rule'));
 
             return;
         }
 
         if ($this->defaultDeviceGroupId > 0 && ! DeviceGroup::query()->whereKey($this->defaultDeviceGroupId)->exists()) {
             $this->tab = 'server';
-            $this->addError('defaultDeviceGroupId', 'That device group no longer exists.');
+            $this->addError('defaultDeviceGroupId', __('messages.group_gone'));
 
             return;
         }
@@ -376,7 +376,7 @@ class SettingsPage extends Component
 
             if ($this->oidcDiscoveryUrl === '' || $this->oidcClientId === '' || $missingSecret) {
                 $this->tab = 'sso';
-                $this->addError('oidcDiscoveryUrl', 'Provider URL, client ID and client secret are all required to enable SSO.');
+                $this->addError('oidcDiscoveryUrl', __('messages.sso_fields_required'));
 
                 return;
             }
@@ -386,7 +386,7 @@ class SettingsPage extends Component
         // swallow every invitation and sign-in code.
         if ($this->smtpEnabled && (trim($this->smtpHost) === '' || trim($this->smtpFromAddress) === '')) {
             $this->tab = 'email';
-            $this->addError('smtpHost', 'Host and From address are both required to enable email.');
+            $this->addError('smtpHost', __('messages.smtp_fields_required'));
 
             return;
         }
@@ -533,7 +533,7 @@ class SettingsPage extends Component
 
         if (! $service->isConfigured()) {
             $this->oidcTestOk = false;
-            $this->oidcTestMessage = 'Save the provider URL, client ID and client secret first.';
+            $this->oidcTestMessage = __('messages.sso_save_first');
 
             return;
         }
@@ -556,7 +556,7 @@ class SettingsPage extends Component
 
         if (! $mail->isConfigured()) {
             $this->smtpTestOk = false;
-            $this->smtpTestMessage = 'Save the SMTP settings first.';
+            $this->smtpTestMessage = __('messages.smtp_save_first');
 
             return;
         }
@@ -565,7 +565,7 @@ class SettingsPage extends Component
 
         if ($to === '' || ! filter_var($to, FILTER_VALIDATE_EMAIL)) {
             $this->smtpTestOk = false;
-            $this->smtpTestMessage = 'Enter a valid address to send the test to.';
+            $this->smtpTestMessage = __('messages.test_address_invalid');
 
             return;
         }
@@ -612,8 +612,8 @@ class SettingsPage extends Component
         $delivery = app(AppriseNotifications::class)->test();
         $this->appriseTestOk = $delivery->status === NotificationDelivery::STATUS_SENT;
         $this->appriseTestMessage = $this->appriseTestOk
-            ? 'Test notification sent.'
-            : ($delivery->error ?: 'Notification delivery failed.');
+            ? __('messages.test_notification_sent')
+            : ($delivery->error ?: __('messages.notification_failed'));
         ConsoleAudit::record('settings.notification-test', 'Sent an Apprise test notification', 'settings', null);
     }
 
@@ -696,7 +696,7 @@ class SettingsPage extends Component
             'oidcCallbackUrl' => route('login.oidc.callback'),
             'mailEnabled' => app(MailSettings::class)->isEnabled(),
             'usersWithoutEmail' => LoginEmailVerification::usersWithoutEmail(),
-            'appriseEventLabels' => AppriseNotifications::EVENTS,
+            'appriseEventLabels' => collect(AppriseNotifications::EVENTS)->map(fn ($label, $event) => AppriseNotifications::eventLabel($event))->all(),
             'appriseDeviceGroups' => DeviceGroup::query()->orderBy('name')->get(['id', 'name']),
             'deviceGroups' => $this->selectableDefaultGroups(),
             'appriseDevices' => Device::query()->approved()->orderByRaw("COALESCE(NULLIF(alias, ''), NULLIF(hostname, ''), rustdesk_id)")->get(['id', 'rustdesk_id', 'alias', 'hostname']),
