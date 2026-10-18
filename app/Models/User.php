@@ -153,6 +153,12 @@ class User extends Authenticatable
     }
 
     /** User groups this user belongs to (many-to-many). */
+    /** Saved web client servers (ID/relay + key), see ServerProfile. */
+    public function serverProfiles(): HasMany
+    {
+        return $this->hasMany(ServerProfile::class);
+    }
+
     public function groups(): BelongsToMany
     {
         return $this->belongsToMany(UserGroup::class, 'user_group_user');

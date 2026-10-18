@@ -75,8 +75,10 @@ return Application::configure(basePath: dirname(__DIR__))
         );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // The API, plus the web client's JSON endpoints (saved server profiles),
+        // answer errors as JSON; every other route keeps the HTML/redirect pages.
         $exceptions->shouldRenderJsonWhen(
-            fn (Request $request) => $request->is('api/*'),
+            fn (Request $request) => $request->is('api/*', 'webclient/profiles', 'webclient/profiles/*'),
         );
 
         // HTTPS-only cookies over plain HTTP: the browser drops the session

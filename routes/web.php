@@ -13,6 +13,7 @@ use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\OidcController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\WebClientPageController;
+use App\Http\Controllers\WebClientProfileController;
 use Illuminate\Support\Facades\Route;
 
 // Web-client bootstrap script (loaded by the static V1 web client pre-login)
@@ -111,6 +112,14 @@ Route::middleware('auth')->group(function () {
 
     // Native in-browser RustDesk client (full-viewport standalone page; assets in public/rdclient/)
     Route::get('/webclient', [WebClientPageController::class, 'show'])->name('webclient');
+
+    // The web client's saved servers ("profiles"), per signed-in user.
+    Route::prefix('/webclient/profiles')->middleware('throttle:60,1,webclient-profiles')->group(function () {
+        Route::get('/', [WebClientProfileController::class, 'index'])->name('webclient.profiles.index');
+        Route::post('/', [WebClientProfileController::class, 'store'])->name('webclient.profiles.store');
+        Route::put('/{profile}', [WebClientProfileController::class, 'update'])->name('webclient.profiles.update');
+        Route::delete('/{profile}', [WebClientProfileController::class, 'destroy'])->name('webclient.profiles.destroy');
+    });
 
     // Operational logs — the baseline every user has always had.
     Route::middleware('console-can:audit,r')->group(function () {

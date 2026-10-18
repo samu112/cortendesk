@@ -36,6 +36,7 @@ class WebClientPageController extends Controller
 
         return view('webclient', [
             'messages' => $messages,
+            'profiles' => WebClientProfileController::profilesFor($request),
             'peerId' => (string) $request->query('id', ''),
             'serverKeyB64' => Setting::server('public_key'),
             'wsIdUrl' => $wsIdUrl,
