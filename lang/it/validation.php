@@ -180,6 +180,7 @@ return [
         'rulePermission' => 'permesso',
         'ruleSubjectType' => 'condividi con',
         'serverAccessMode' => 'accesso al server',
+        'serverKey' => 'chiave del server',
         'smtpEncryption' => 'crittografia',
         'smtpFromAddress' => 'indirizzo mittente',
         'smtpFromName' => 'nome mittente',
@@ -196,5 +197,7 @@ return [
         'user_group_ids' => 'gruppi utenti',
         'username' => 'nome utente',
         'version' => 'versione',
+        'wsIdUrl' => 'URL dell’ID server',
+        'wsRelayUrl' => 'URL del server relay',
     ],
 ];

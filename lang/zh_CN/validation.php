@@ -180,6 +180,7 @@ return [
         'rulePermission' => '权限',
         'ruleSubjectType' => '共享给',
         'serverAccessMode' => '服务器访问',
+        'serverKey' => '服务器密钥',
         'smtpEncryption' => '加密',
         'smtpFromAddress' => '发件人地址',
         'smtpFromName' => '发件人名称',
@@ -196,5 +197,7 @@ return [
         'user_group_ids' => '用户组',
         'username' => '用户名',
         'version' => '版本',
+        'wsIdUrl' => 'ID 服务器 URL',
+        'wsRelayUrl' => '中继服务器 URL',
     ],
 ];

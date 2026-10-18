@@ -91,6 +91,7 @@ import {
 import { FilePanel } from './file-panel';
 import { TerminalPanel } from './terminal-panel';
 import { TerminalApp, terminalModeFromSearch } from './terminal-app';
+import { ServerProfiles, openProfileDialog, resolveServer, type ServerProfile } from './server-profiles';
 import { consumeTwoFactorCode, renderConnectCard, showTwoFactor, type ConnectCardEls } from './connect-card';
 import { CameraPanel } from './camera-panel';
 import { MseVideoPlayer } from '../media/mse-video';
@@ -185,6 +186,11 @@ type Els = ConnectCardEls & {
   statDevice: HTMLElement;
   statUser: HTMLElement;
   statPlatform: HTMLElement;
+  connectCancel: HTMLButtonElement;
+  profileWrap: HTMLElement;
+  profileSelect: HTMLSelectElement;
+  profileManage: HTMLButtonElement;
+  profileManageLabel: HTMLElement;
 };
 
 const HOME_SCREEN_HINT_KEY = 'cortendesk.rdhomescreenhint.v1';
@@ -250,6 +256,9 @@ const SOFT_KEY_CONTROL: Record<SoftKey, ControlKey> = {
 
 export class RdApp {
   private cfg: RdGlobalConfig | undefined;
+  private profiles!: ServerProfiles;
+  /** The server this session was started on (null = this console's own); side panels reuse it. */
+  private connectedProfile: ServerProfile | null = null;
   private el!: Els;
   private canvas!: HTMLCanvasElement;
   private worker: Worker | undefined;
@@ -385,6 +394,11 @@ export class RdApp {
   mount(): void {
     (window as unknown as { __rdApp?: RdApp }).__rdApp = this; // console/debug handle
     this.cfg = (window as unknown as RdWindow).__RD__;
+    this.profiles = new ServerProfiles({
+      profiles: this.cfg?.profiles,
+      csrf: this.cfg?.csrf,
+      profilesUrl: this.cfg?.profilesUrl,
+    });
     this.ensureDom();
     this.renderTopBar();
     this.renderDock();
@@ -407,6 +421,9 @@ export class RdApp {
     if (this.share) {
       this.applyShareMode(this.share);
     } else if (this.fixedPeerId) {
+      // Opened for one device (the Devices list links here): it lives on this console's server.
+      this.profiles.useDefaultUntilChanged();
+      this.refreshProfilePicker();
       this.el.fieldId.hidden = true;
       this.el.overlayTarget.hidden = false;
       this.el.overlayPeer.textContent = this.fixedPeerId;
@@ -436,7 +453,7 @@ export class RdApp {
     } else if (
       this.fixedPeerId &&
       !loggedOutFromSearch(location.search) &&
-      (loadSavedHash(this.fixedPeerId) || addressBookReady(this.cfg, this.fixedPeerId))
+      (loadSavedHash(this.fixedPeerId, this.savedScope()) || (!this.profiles.selected() && addressBookReady(this.cfg, this.fixedPeerId)))
     ) {
       this.onConnectClick();
     }
@@ -754,6 +771,8 @@ export class RdApp {
     this.el.overlayPeer.textContent = share.deviceName || share.label;
     this.el.peerLabel.textContent = share.deviceName || share.label;
     this.voiceCallSupported = false;
+    // A share link is for this console's own server: no server picker.
+    this.el.profileManage.parentElement?.style.setProperty('display', 'none');
     this.syncShareCard();
     this.startSharePing(share);
   }
@@ -1093,7 +1112,7 @@ export class RdApp {
    */
   private sideConfig(connType: SessionConfig['connType']): SessionConfig {
     return {
-      ...buildSessionConfig(this.cfg!, this.peerId, '', this.sessionHashHex, connType),
+      ...buildSessionConfig(this.serverCfg(), this.peerId, '', this.sessionHashHex, connType),
       sessionId: this.reconnectConfig?.sessionId,
     };
   }
@@ -2409,16 +2428,43 @@ export class RdApp {
   // --- connect overlay ------------------------------------------------------------
 
   private renderOverlay(): void {
+    const svg = (paths: string, size = 20): string =>
+      `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" ` +
+      `stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
+    const serverIc = svg('<rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M7 7h.01M7 17h.01"/>');
+    const gear = svg('<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/>', 16);
     Object.assign(this.el, renderConnectCard(this.el.overlay, {
       tagline: `${htl('overlay_title')} ${overlayVersion(this.cfg)}`,
+      top: `<div class="rd-profile-row">
+          <label class="rd-input" id="rd-profile-wrap" hidden>
+            <span class="rd-input-ic">${serverIc}</span>
+            <select id="rd-profile" aria-label="${htl('server_profile')}"></select>
+          </label>
+          <button type="button" class="rd-chip" id="rd-profile-manage" title="${htl('server_profiles')}">${gear}<span id="rd-profile-manage-lbl">${htl('server_profiles')}</span></button>
+        </div>`,
+      bottom: `<button type="button" class="rd-chip rd-connect-cancel" id="rd-connect-cancel" hidden>${htl('cancel_connection')}</button>`,
     }));
+    const o = this.el.overlay;
+    this.el.connectCancel = o.querySelector<HTMLButtonElement>('#rd-connect-cancel')!;
+    this.el.profileWrap = o.querySelector<HTMLElement>('#rd-profile-wrap')!;
+    this.el.profileSelect = o.querySelector<HTMLSelectElement>('#rd-profile')!;
+    this.el.profileManage = o.querySelector<HTMLButtonElement>('#rd-profile-manage')!;
+    this.el.profileManageLabel = o.querySelector<HTMLElement>('#rd-profile-manage-lbl')!;
     this.el.connectBtn.addEventListener('click', () => this.onConnectClick());
     this.el.reconnectCancel.addEventListener('click', () => this.cancelRestartReconnect());
+    this.el.connectCancel.addEventListener('click', () => this.cancelConnect());
+    this.el.profileManage.addEventListener('click', () => this.openProfiles());
+    this.el.profileSelect.addEventListener('change', () => {
+      this.profiles.select(this.el.profileSelect.value ? Number(this.el.profileSelect.value) : null);
+      this.setOverlayError(null);
+      this.hydrateSavedPassword(this.fixedPeerId || normalizePeerId(this.el.peerIdInput.value));
+    });
     const enter = (e: KeyboardEvent): void => {
       if (e.key === 'Enter') this.onConnectClick();
     };
     this.el.passwordInput.addEventListener('keydown', enter);
     this.el.peerIdInput.addEventListener('keydown', enter);
+    this.refreshProfilePicker();
     this.el.twoFactorBtn.addEventListener('click', () => this.submitTwoFactor());
     this.el.twoFactorInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') this.submitTwoFactor();
@@ -2453,15 +2499,47 @@ export class RdApp {
 
   // --- session lifecycle -----------------------------------------------------
 
+  /** Server settings for a new session: the console's own, or the connected profile's. */
+  private serverCfg(): RdGlobalConfig {
+    const base = this.cfg as RdGlobalConfig;
+    const p = this.connectedProfile;
+    return p ? { ...base, ...resolveServer(p), signalToken: undefined } : base;
+  }
+
+  /** Saved credentials are kept per server: '' for the console's own, 'p<id>' for a profile. */
+  private savedScope(profile: ServerProfile | null = this.profiles.selected()): string {
+    return profile ? `p${profile.id}` : '';
+  }
+
+  private refreshProfilePicker(): void {
+    const list = this.profiles.all();
+    const select = this.el.profileSelect;
+    select.replaceChildren(new Option(tl('console_server_default'), ''), ...list.map((p) => new Option(p.name, String(p.id))));
+    const current = this.profiles.selected();
+    select.value = current ? String(current.id) : '';
+    this.el.profileWrap.hidden = list.length === 0;
+    this.el.profileManageLabel.hidden = list.length > 0;
+    this.hydrateSavedPassword(this.fixedPeerId || normalizePeerId(this.el.peerIdInput.value));
+  }
+
+  private openProfiles(): void {
+    const c = this.cfg;
+    openProfileDialog(
+      this.profiles,
+      { idServer: c?.wsIdUrl ?? '', relayServer: c?.wsRelayUrl ?? '', serverKey: c?.serverKeyB64 ?? '' },
+      () => this.refreshProfilePicker(),
+    );
+  }
+
   // Reflect any stored credential for this device: tick the box and show a saved
   // placeholder instead of an empty field. A real value never leaves storage.
   private hydrateSavedPassword(peerId: string): void {
-    const has = !!peerId && loadSavedHash(peerId) !== null;
+    const has = !!peerId && loadSavedHash(peerId, this.savedScope()) !== null;
     this.el.saveCheckbox.checked = has;
     this.el.passwordInput.value = '';
     this.el.passwordInput.placeholder = has
       ? tl('saved_password_click_change')
-      : !this.addressBookRefused && addressBookReady(this.cfg, peerId)
+      : !this.addressBookRefused && !this.profiles.selected() && addressBookReady(this.cfg, peerId)
         ? tl('address_book_password_ready')
         : tl('enter_password');
   }
@@ -2520,14 +2598,19 @@ export class RdApp {
     this.setOverlayError(null);
     this.setLoggedOutFlag(false); // connecting again clears the logout marker
 
+    // The server is fixed for the whole session: side panels reuse it. A share
+    // viewer is always on this console's own server.
+    this.connectedProfile = this.share ? null : this.profiles.selected();
+    const scope = this.savedScope(this.connectedProfile);
+
     const typed = this.consumePasswordInput();
     // A share viewer always goes through the accept window: the page shares
     // its origin with the console's web client, so a password saved there for
     // this device is neither used nor cleared.
-    const saved = this.share ? null : loadSavedHash(peerId);
+    const saved = this.share ? null : loadSavedHash(peerId, scope);
     // If the user left the field blank and we have a stored hash, reuse it.
     // If the "save" box is off, forget any stored credential for this device.
-    if (!this.share && !this.el.saveCheckbox.checked) clearSavedHash(peerId);
+    if (!this.share && !this.el.saveCheckbox.checked) clearSavedHash(peerId, scope);
     this.pendingHashHex = undefined;
     this.connectedWithSavedHash = false;
     this.connectedWithAddressBook = false;
@@ -2535,9 +2618,9 @@ export class RdApp {
     let config: SessionConfig;
     if (!typed && saved) {
       this.connectedWithSavedHash = true;
-      config = buildSessionConfig(this.cfg, peerId, '', saved);
+      config = buildSessionConfig(this.serverCfg(), peerId, '', saved);
     } else {
-      config = buildSessionConfig(this.cfg, peerId, typed, undefined, undefined, !this.addressBookRefused);
+      config = buildSessionConfig(this.serverCfg(), peerId, typed, undefined, undefined, !this.addressBookRefused && !this.connectedProfile);
     }
     this.startSession({ ...config, sessionId: newSessionId() });
   }
@@ -2627,6 +2710,19 @@ export class RdApp {
     this.restartFlow = flow;
     this.dbg('reconnect', { detail });
     this.scheduleRestartReconnect(detail);
+  }
+
+  /**
+   * Give up on a connection that is still being set up, for example while the
+   * remote user has not accepted it yet. Tells the worker to hang up, then
+   * returns the connect screen to its idle state.
+   */
+  private cancelConnect(): void {
+    this.setLoggedOutFlag(true); // a saved password must not reconnect on reload
+    this.clearRestartFlow();
+    this.post({ c: 'disconnect' });
+    this.setState('closed');
+    this.setOverlayStatusText(tl('connection_cancelled'));
   }
 
   private cancelRestartReconnect(): void {
@@ -3186,7 +3282,7 @@ export class RdApp {
         this.hideTwoFactor();
         if (this.connectedWithSavedHash) {
           // The stored credential no longer works (password changed) — drop it.
-          clearSavedHash(this.peerId);
+          clearSavedHash(this.peerId, this.savedScope(this.connectedProfile));
           this.el.saveCheckbox.checked = false;
           this.el.passwordInput.placeholder = tl('enter_password');
           this.connectedWithSavedHash = false;
@@ -3213,11 +3309,11 @@ export class RdApp {
   private persistCredentialIfWanted(): void {
     if (this.share) return;
     if (!this.el.saveCheckbox.checked) {
-      clearSavedHash(this.peerId);
+      clearSavedHash(this.peerId, this.savedScope(this.connectedProfile));
       return;
     }
     // A freshly-typed password emits a new hash; a reused saved hash keeps the stored one.
-    if (this.pendingHashHex) saveSavedHash(this.peerId, this.pendingHashHex);
+    if (this.pendingHashHex) saveSavedHash(this.peerId, this.pendingHashHex, this.savedScope(this.connectedProfile));
   }
 
   /** The line under the peer name: state while in flight, identity once live. */
@@ -3759,6 +3855,7 @@ export class RdApp {
   }
 
   private setOverlayBusy(busy: boolean): void {
+    this.el.connectCancel.hidden = !busy || !!this.restartFlow;
     this.el.connectBtn.disabled = busy;
     this.el.peerIdInput.disabled = busy;
     this.el.passwordInput.disabled = busy;

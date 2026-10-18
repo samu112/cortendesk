@@ -27,6 +27,10 @@ export type ConnectCardOptions = {
   tagline: string;
   /** Extra markup placed after "save password" (already escaped). */
   extra?: string;
+  /** Markup placed right under the help line, above the device id (already escaped). */
+  top?: string;
+  /** Markup placed under the status line, after the reconnect Cancel button (already escaped). */
+  bottom?: string;
 };
 
 function q<T extends Element>(scope: ParentNode, sel: string): T {
@@ -54,6 +58,7 @@ export function renderConnectCard(overlay: HTMLElement, opts: ConnectCardOptions
       <div class="rd-tagline">${opts.tagline}</div>
       <div class="rd-divider" aria-hidden="true"></div>
       <p class="rd-help">${htl('enter_clients_temporary_or_permanent')}</p>
+      ${opts.top ?? ''}
       <div class="rd-target" id="rd-target" hidden>
         <span class="rd-target-ic">${device}</span>
         <span class="rd-target-cap">${htl('client_id')}</span>
@@ -91,6 +96,7 @@ export function renderConnectCard(overlay: HTMLElement, opts: ConnectCardOptions
         <div class="rd-overlay-error" id="rd-overlay-error" role="alert" hidden></div>
       </div>
       <button type="button" class="rd-chip" id="rd-restart-cancel" hidden>${htl('cancel_reconnect')}</button>
+      ${opts.bottom ?? ''}
     </div>`;
   const o = overlay;
   return {

@@ -180,6 +180,7 @@ return [
         'rulePermission' => 'machtiging',
         'ruleSubjectType' => 'delen met',
         'serverAccessMode' => 'servertoegang',
+        'serverKey' => 'serversleutel',
         'smtpEncryption' => 'versleuteling',
         'smtpFromAddress' => 'afzenderadres',
         'smtpFromName' => 'afzendernaam',
@@ -196,5 +197,7 @@ return [
         'user_group_ids' => 'gebruikersgroepen',
         'username' => 'gebruikersnaam',
         'version' => 'versie',
+        'wsIdUrl' => 'URL van ID-server',
+        'wsRelayUrl' => 'URL van relay-server',
     ],
 ];

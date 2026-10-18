@@ -180,6 +180,7 @@ return [
         'rulePermission' => 'oprávnenie',
         'ruleSubjectType' => 'zdieľať s',
         'serverAccessMode' => 'prístup k serveru',
+        'serverKey' => 'kľúč servera',
         'smtpEncryption' => 'šifrovanie',
         'smtpFromAddress' => 'adresa odosielateľa',
         'smtpFromName' => 'meno odosielateľa',
@@ -196,5 +197,7 @@ return [
         'user_group_ids' => 'skupiny používateľov',
         'username' => 'používateľské meno',
         'version' => 'verzia',
+        'wsIdUrl' => 'URL ID servera',
+        'wsRelayUrl' => 'URL prenosového servera',
     ],
 ];

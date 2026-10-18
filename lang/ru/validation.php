@@ -180,6 +180,7 @@ return [
         'rulePermission' => 'права',
         'ruleSubjectType' => 'доступ для',
         'serverAccessMode' => 'доступ к серверу',
+        'serverKey' => 'ключ сервера',
         'smtpEncryption' => 'шифрование',
         'smtpFromAddress' => 'адрес отправителя',
         'smtpFromName' => 'имя отправителя',
@@ -196,5 +197,7 @@ return [
         'user_group_ids' => 'группы пользователей',
         'username' => 'имя пользователя',
         'version' => 'версия',
+        'wsIdUrl' => 'URL сервера ID',
+        'wsRelayUrl' => 'URL ретранслятора',
     ],
 ];
