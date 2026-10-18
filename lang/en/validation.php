@@ -196,5 +196,8 @@ return [
         'user_group_ids' => 'user groups',
         'username' => 'username',
         'version' => 'version',
+        'wsIdUrl' => 'ID server URL',
+        'wsRelayUrl' => 'relay server URL',
+        'serverKey' => 'server key',
     ],
 ];

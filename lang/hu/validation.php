@@ -196,5 +196,8 @@ return [
         'user_group_ids' => 'felhasználói csoportok',
         'username' => 'felhasználónév',
         'version' => 'verzió',
+        'wsIdUrl' => 'ID-kiszolgáló URL-je',
+        'wsRelayUrl' => 'továbbító-kiszolgáló URL-je',
+        'serverKey' => 'kiszolgálókulcs',
     ],
 ];

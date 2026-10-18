@@ -51,6 +51,9 @@
             addressBook: @json($addressBook ?? null),
             version: @json(config('cortendesk.api_version')),
             messages: @json($messages),
+            profiles: @json($profiles),
+            csrf: @json(csrf_token()),
+            profilesUrl: @json(route('webclient.profiles.index')),
             workerUrl: '/rdclient/session.worker.js?v={{ $rdVer }}'
         };
         // No ?id= given: app.js shows the connect overlay asking for peer id + password.
