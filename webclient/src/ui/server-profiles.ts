@@ -53,6 +53,8 @@ export class ProfileError extends Error {}
 
 export class ServerProfiles {
   private list: ServerProfile[];
+  /** True until the user picks a server on this page: the remembered profile is ignored. */
+  private defaultOnly = false;
 
   constructor(private readonly env: ProfileEnv) {
     this.list = [...(env.profiles ?? [])];
@@ -62,8 +64,18 @@ export class ServerProfiles {
     return this.list;
   }
 
+  /**
+   * A page opened for a specific device (?id=, e.g. from the console's Devices
+   * list) belongs to this console's own server, whatever profile was picked
+   * last. The remembered choice is left alone and applies again next time.
+   */
+  useDefaultUntilChanged(): void {
+    this.defaultOnly = true;
+  }
+
   /** The profile picked in this browser, or null for the console's own server. */
   selected(): ServerProfile | null {
+    if (this.defaultOnly) return null;
     let raw: string | null = null;
     try {
       raw = localStorage.getItem(SELECTED_KEY);
@@ -75,6 +87,7 @@ export class ServerProfiles {
   }
 
   select(id: number | null): void {
+    this.defaultOnly = false;
     try {
       if (id === null) localStorage.removeItem(SELECTED_KEY);
       else localStorage.setItem(SELECTED_KEY, String(id));

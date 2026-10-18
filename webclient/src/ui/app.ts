@@ -305,6 +305,9 @@ export class RdApp {
     this.fixedPeerId =
       normalizePeerId(this.cfg?.peerId ?? '') || peerIdFromSearch(location.search) || '';
     if (this.fixedPeerId) {
+      // Opened for one device (the Devices list links here): it lives on this console's server.
+      this.profiles.useDefaultUntilChanged();
+      this.refreshProfilePicker();
       this.el.fieldId.hidden = true;
       this.el.overlayTarget.hidden = false;
       this.el.overlayPeer.textContent = this.fixedPeerId;
