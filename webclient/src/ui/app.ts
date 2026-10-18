@@ -161,6 +161,7 @@ type Els = {
   overlayStatusText: HTMLElement;
   overlayError: HTMLElement;
   reconnectCancel: HTMLButtonElement;
+  connectCancel: HTMLButtonElement;
   profileWrap: HTMLElement;
   profileSelect: HTMLSelectElement;
   profileManage: HTMLButtonElement;
@@ -1685,6 +1686,7 @@ export class RdApp {
           <div class="rd-overlay-error" id="rd-overlay-error" role="alert" hidden></div>
         </div>
         <button type="button" class="rd-chip" id="rd-restart-cancel" hidden>${tl('cancel_reconnect')}</button>
+        <button type="button" class="rd-chip rd-connect-cancel" id="rd-connect-cancel" hidden>${tl('cancel_connection')}</button>
       </div>`;
     const o = this.el.overlay;
     this.el.overlayPeer = q(o, '#rd-overlay-peer');
@@ -1698,6 +1700,7 @@ export class RdApp {
     this.el.overlayStatusText = q(o, '#rd-overlay-status-text');
     this.el.overlayError = q(o, '#rd-overlay-error');
     this.el.reconnectCancel = q(o, '#rd-restart-cancel');
+    this.el.connectCancel = q(o, '#rd-connect-cancel');
     this.el.profileWrap = q(o, '#rd-profile-wrap');
     this.el.profileSelect = q(o, '#rd-profile');
     this.el.profileManage = q(o, '#rd-profile-manage');
@@ -1705,6 +1708,7 @@ export class RdApp {
 
     this.el.connectBtn.addEventListener('click', () => this.onConnectClick());
     this.el.reconnectCancel.addEventListener('click', () => this.cancelRestartReconnect());
+    this.el.connectCancel.addEventListener('click', () => this.cancelConnect());
     this.el.profileManage.addEventListener('click', () => this.openProfiles());
     this.el.profileSelect.addEventListener('change', () => {
       this.profiles.select(this.el.profileSelect.value ? Number(this.el.profileSelect.value) : null);
@@ -1892,6 +1896,19 @@ export class RdApp {
       flow.reconnecting = true;
       this.startSession({ ...flow.config, password: '' });
     }, delay);
+  }
+
+  /**
+   * Give up on a connection that is still being set up, for example while the
+   * remote user has not accepted it yet. Tells the worker to hang up, then
+   * returns the connect screen to its idle state.
+   */
+  private cancelConnect(): void {
+    this.setLoggedOutFlag(true); // a saved password must not reconnect on reload
+    this.clearRestartFlow();
+    this.post({ c: 'disconnect' });
+    this.setState('closed');
+    this.setOverlayStatusText(tl('connection_cancelled'));
   }
 
   private cancelRestartReconnect(): void {
@@ -2797,6 +2814,7 @@ export class RdApp {
   }
 
   private setOverlayBusy(busy: boolean): void {
+    this.el.connectCancel.hidden = !busy || !!this.restartFlow;
     this.el.connectBtn.disabled = busy;
     this.el.peerIdInput.disabled = busy;
     this.el.passwordInput.disabled = busy;

@@ -1836,3 +1836,9 @@
   color: var(--rd-danger);
   font-size: 12.5px;
 }
+
+.rd-connect-cancel:not([hidden]) {
+  display: flex;
+  margin: 12px auto 0;
+  border-color: var(--rd-border);
+}
