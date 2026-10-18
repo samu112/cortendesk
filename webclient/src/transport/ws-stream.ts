@@ -9,6 +9,7 @@
 // already-OPEN instance to `new WsStream(sock)` (the 'ws' WebSocket is
 // addEventListener-compatible and accepts binaryType='arraybuffer').
 import type { Transport } from '../core/contracts';
+import { tl } from '../i18n';
 
 export interface WebSocketLike {
   binaryType: string;
@@ -55,8 +56,8 @@ export class WsStream implements Transport {
     return new Promise((resolve, reject) => {
       const ws = new Ctor(url);
       ws.binaryType = 'arraybuffer';
-      ws.addEventListener('error', () => reject(new Error(`websocket error before open: ${url}`)));
-      ws.addEventListener('close', () => reject(new Error(`websocket closed before open: ${url}`)));
+      ws.addEventListener('error', () => reject(new Error(tl('ws_error_before_open', { url }))));
+      ws.addEventListener('close', () => reject(new Error(tl('ws_closed_before_open', { url }))));
       ws.addEventListener('open', () => resolve(new WsStream(ws)));
     });
   }
@@ -86,7 +87,7 @@ export class WsStream implements Transport {
   next(): Promise<Uint8Array> {
     const buffered = this.queue.shift();
     if (buffered) return Promise.resolve(buffered);
-    if (this.closed) return Promise.reject(new Error('websocket closed'));
+    if (this.closed) return Promise.reject(new Error(tl('ws_closed')));
     return new Promise((resolve, reject) => this.waiters.push({ resolve, reject }));
   }
 
@@ -120,7 +121,7 @@ export class WsStream implements Transport {
   private teardown(): void {
     if (this.closed) return;
     this.closed = true;
-    for (const w of this.waiters.splice(0)) w.reject(new Error('websocket closed'));
+    for (const w of this.waiters.splice(0)) w.reject(new Error(tl('ws_closed')));
     for (const cb of this.closeCbs.splice(0)) cb();
   }
 }

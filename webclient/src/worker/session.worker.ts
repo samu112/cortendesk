@@ -34,6 +34,7 @@ import { ForwardingVideoPipeline } from '../media/mse-video';
 import { cursorToDataUrl, decodeClipboardText, initZstd, zstdDecode } from '../input/clipboard-cursor';
 import { decodeTerminalOutput } from './terminal-output';
 import { setCatalog, tl } from '../i18n';
+import { wsEndpoint } from '../core/ws-endpoint';
 
 // Decoded audio is outside the frozen SessionEvent union: the main thread
 // feeds it to an AudioWorklet ring buffer and ignores unknown `t` otherwise.
@@ -505,8 +506,8 @@ export class WorkerHost {
         onVideo: (vf) => this.video?.pushFrame(vf),
         onAudioFormat: (sampleRate, channels) => this.audio?.setFormat(sampleRate, channels),
         onAudioFrame: (d) => this.audio?.pushFrame(d),
-        openRelay: () => {
-          void this.openRelay(config.wsRelayUrl);
+        openRelay: (relayServer) => {
+          void this.openRelay(config.wsRelayUrl || wsEndpoint(relayServer, 'relay'));
         },
         closeAll: () => this.teardown(),
         onCursor: (c) => {

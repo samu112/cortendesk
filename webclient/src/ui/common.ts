@@ -17,6 +17,11 @@ export type RdGlobalConfig = {
   /** Console version, injected per request — see OVERLAY_VERSION. */
   version?: string;
   workerUrl?: string;
+  /** The signed-in user's saved servers, and what the manage dialog needs to change them. */
+  profiles?: import('./server-profiles').ServerProfile[];
+  csrf?: string;
+  profilesUrl?: string;
+  messages?: Record<string, string>;
 };
 
 export const QUALITY = { best: 4, balanced: 3, speed: 2 } as const; // ImageQuality enum values
@@ -113,24 +118,27 @@ export function cursorCss(pngDataUrl: string, hotx: number, hoty: number): strin
 // "Save password" persists only h1 = SHA256(pw||salt) (hex), keyed by device —
 // never the plaintext. h1 is a per-device login credential (same thing the
 // native RustDesk client stores), so it is scoped per peerId.
+// A device ID can exist on more than one server, so a saved credential is also
+// scoped to the server profile it was saved under ('' = the console's own).
 const SAVED_PW_PREFIX = 'cortendesk.rdpw.';
-export function loadSavedHash(peerId: string): string | null {
+const savedKey = (peerId: string, scope: string): string => SAVED_PW_PREFIX + (scope ? scope + '.' : '') + peerId;
+export function loadSavedHash(peerId: string, scope = ''): string | null {
   try {
-    return localStorage.getItem(SAVED_PW_PREFIX + peerId);
+    return localStorage.getItem(savedKey(peerId, scope));
   } catch {
     return null;
   }
 }
-export function saveSavedHash(peerId: string, hashHex: string): void {
+export function saveSavedHash(peerId: string, hashHex: string, scope = ''): void {
   try {
-    localStorage.setItem(SAVED_PW_PREFIX + peerId, hashHex);
+    localStorage.setItem(savedKey(peerId, scope), hashHex);
   } catch {
     /* storage unavailable / full — non-fatal */
   }
 }
-export function clearSavedHash(peerId: string): void {
+export function clearSavedHash(peerId: string, scope = ''): void {
   try {
-    localStorage.removeItem(SAVED_PW_PREFIX + peerId);
+    localStorage.removeItem(savedKey(peerId, scope));
   } catch {
     /* non-fatal */
   }
